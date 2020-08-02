@@ -56,15 +56,18 @@ sg4Detector::sg4Detector(G4String fn)
   G4cout<<"creating detector construction..."<<G4endl;
 	par.Energycut=0;
 	par.dBarrel=150*mm;  
-par.xBarrel=-50*mm;//changed by sh
-	par.dDet=10*mm;
+par.xBarrel=0*mm;//changed by sh
+	par.dDet=13*mm;
 	par.xDet=300*mm;
-	par.dVoxel=50*mm;//changed by sh
-par.Degree=0;//changed by sh
-	par.NbVoxel=9;//changed by sh
+	par.dVoxel=50*mm;
+par.Degree=45;//changed by sh
+	par.NbVoxel=27;//changed by sh
+	par.yBarrel=0*mm;
 	par.abun=0.96;
 	par.Bcon=0.1;
 	par.Gdcon=0.03;
+par.yBarrel=-50*mm;//changed by sh
+
 }
 
 sg4Detector::~sg4Detector()
@@ -97,6 +100,7 @@ void sg4Detector::DefineMaterial()
   Air=nist->FindOrBuildMaterial("G4_AIR");
   G4_WATER=nist->FindOrBuildMaterial("G4_WATER");
   G4_Pb=nist->FindOrBuildMaterial("G4_Pb");
+  G4_Ge=nist->FindOrBuildMaterial("G4_Ge");
   nist->FindOrBuildMaterial("G4_H");
   G4_Al=nist->FindOrBuildMaterial("G4_Al");
   G4_Cu=nist->FindOrBuildMaterial("G4_Cu");
@@ -122,13 +126,16 @@ void sg4Detector::DefineMaterial()
     /////MCP Material Version2 for 北方夜视
   Al2O3=nist->FindOrBuildMaterial("G4_ALUMINUM_OXIDE");
   SiO2=nist->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
-
+  Concrete=nist->FindOrBuildMaterial("G4_CONCRETE"); 
   }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
 void sg4Detector::DefineVolume()
 {
     G4double dworld = 400*mm;
+	G4double RMin_Col=5*mm;//准直器内径
+	G4double RMax_Col=8*mm;//准直器外径
+	G4double L_Col=100*mm;//准直器长度
   G4Box* solidWorld = new G4Box("world", dworld, dworld, dworld); //its size
   logicWorld = new G4LogicalVolume(solidWorld,          //its solid
 				   vacuum,           //its material
@@ -143,14 +150,15 @@ void sg4Detector::DefineVolume()
 				 checkOverlaps);        //overlaps checking
 
 //waste barrel
- double dVoxel=par.dVoxel, dBarrel=par.dBarrel,dDet=par.dDet, xDet=par.xDet,xBarrel=par.xBarrel;
+ double dVoxel=par.dVoxel, dBarrel=par.dBarrel,dDet=par.dDet, xDet=par.xDet,xBarrel=par.xBarrel,yBarrel=par.yBarrel;
+ G4double LDet=57*mm;//探测器厚度
  G4Box* solidBarrel=new G4Box("Barrel",dBarrel/2,dBarrel/2,dBarrel/2);
  logicBarrel=new G4LogicalVolume(solidBarrel,vacuum,"logicBarrel");
  G4RotationMatrix* rot=new G4RotationMatrix;
  rot->rotateY(par.Degree*deg);
  physiBarrel=new G4PVPlacement(
 				rot,
-				G4ThreeVector(xBarrel,0,0),
+				G4ThreeVector(xBarrel,yBarrel,0),
 				logicBarrel,
 				"physiBarrel",
 				logicWorld,
@@ -163,42 +171,38 @@ void sg4Detector::DefineVolume()
  G4LogicalVolume* logicVoxel[par.NbVoxel];
  G4VPhysicalVolume* physiVoxel[par.NbVoxel];
  char str[20],str1[20];  
- double posMat1[par.NbVoxel],posMat2[par.NbVoxel];
+ double posMat1[par.NbVoxel],posMat2[par.NbVoxel],posMat3[par.NbVoxel];
+double x=0,y=0,z=0;
+
  for(int k=0;k<par.NbVoxel;k++){
 	//posMat1
 	if(k%3==0){posMat1[k]=-dVoxel;}
 	if(k%3==1){posMat1[k]=0;}
 	if(k%3==2){posMat1[k]=dVoxel;}
 	//posMat2
-	if(k<3){posMat2[k]=dVoxel;}
-	if(k>=3&&k<6){posMat2[k]=0;}
-	if(k>=6){posMat2[k]=-dVoxel;}
+	if(k%9<3){posMat2[k]=dVoxel;}
+	if(k%9>=3&&k%9<6){posMat2[k]=0;}
+	if(k%9>=6&&k%9<9){posMat2[k]=-dVoxel;}
+	//posMat3
+	if(k<9){posMat3[k]=-dVoxel;}	
+	if(k>=9&&k<18){posMat3[k]=0;}
+	if(k>=18&&k<27){posMat3[k]=dVoxel;}
  }
  for(int j=1;j<=par.NbVoxel;j++)
 	{
-	double x=0, z=0;
-       	 sprintf (str,"V%d",j); 
-	 sprintf(str1,"logicVoxel%d",j);
-	 /*
+	       	 sprintf (str,"V%d",j); 
+		 sprintf(str1,"logicVoxel%d",j);
+//设置体素材料	 
 		if(j==5){
-              logicVoxel[j]=new G4LogicalVolume(solidVoxel,G4_WATER,str1);
-//              logicVoxel[j]=new G4LogicalVolume(solidVoxel,vacuum,str1);
-
+              logicVoxel[j]=new G4LogicalVolume(solidVoxel,Concrete,str1);
 			}
-		if(j==4||j==6){
-           logicVoxel[j]=new G4LogicalVolume(solidVoxel,G4_WATER,str1);
-//      logicVoxel[j]=new G4LogicalVolume(solidVoxel,vacuum,str1);
-
-				}
-		if((j>=1&&j<=3)||(j>=7&&j<=9)){
-		logicVoxel[j]=new G4LogicalVolume(solidVoxel,G4_WATER,str1); //G4_WATER
-//	    logicVoxel[j]=new G4LogicalVolume(solidVoxel,vacuum,str1);
-		}
-		*/
-		 logicVoxel[j]=new G4LogicalVolume(solidVoxel,vacuum,str1);
-		x=posMat1[j-1],z=posMat2[j-1];
+		else{
+		    logicVoxel[j]=new G4LogicalVolume(solidVoxel,G4_WATER,str1);
+			}
+//
+		x=posMat1[j-1],z=posMat2[j-1],y=posMat3[j-1];
                 physiVoxel[j]= new G4PVPlacement(0,                     //rotation
-  					 G4ThreeVector(x,0,z),  //注意单位 x y算出来是mm
+  					 G4ThreeVector(x,y,z),  //注意单位 x y算出来是mm
   					 logicVoxel[j],          //its logical volume
   					 str,                 //its name
   					 logicBarrel,            //its mother volume
@@ -211,14 +215,13 @@ void sg4Detector::DefineVolume()
       logicVoxel[j]->SetVisAttributes(CuBoxVisAtt1);
 
 	}	
-  G4Tubs* solidDet=new G4Tubs("HPGE",0.0,dDet/2,0.5*mm,0,2*PI);
- logicDet=new G4LogicalVolume(solidDet,Gd2O3,"logicDet");
+  G4Tubs* solidDet=new G4Tubs("HPGE",0.0,dDet/2,LDet/2,0,2*PI);//设置晶体参数 半径  半厚度
+ logicDet=new G4LogicalVolume(solidDet,G4_Ge,"logicDet");
 
 // logicDet=new G4LogicalVolume(solidDet,vacuum,"logicDet");
  physiDet=new G4PVPlacement(
 				0,
 				G4ThreeVector(0,0,xDet),
-//				G4ThreeVector(0,0,-50),
 				logicDet,
 				"physiDet",
 				logicWorld,
@@ -226,7 +229,18 @@ void sg4Detector::DefineVolume()
 				0,
 				checkOverlaps
 				);
-
+	G4Tubs* solidCol=new G4Tubs("Collimation",RMin_Col,RMax_Col,L_Col/2,0,2*PI);
+	logicCol=new G4LogicalVolume(solidCol,G4_Pb,"logicCol");
+	physiCol=new G4PVPlacement(
+					0,
+					G4ThreeVector(0,0,xDet-L_Col/2-LDet/2),
+					logicCol,
+					"physiCol",
+					logicWorld,
+					false,
+					0,		
+					checkOverlaps
+					);
 
   	  logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
 

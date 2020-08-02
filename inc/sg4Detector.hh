@@ -39,6 +39,7 @@ int Energycut;
 G4double dVoxel;
 G4double dBarrel;
 G4double xBarrel;
+G4double yBarrel;
 G4double dDet;
 G4double xDet;
 G4double Degree;
@@ -83,6 +84,8 @@ private:
   G4VPhysicalVolume* physiBarrel;
   G4LogicalVolume* logicDet;
   G4VPhysicalVolume* physiDet;
+  G4LogicalVolume* logicCol;
+  G4VPhysicalVolume* physiCol;
   
     
 //----------Materials-----------
@@ -102,7 +105,9 @@ private:
   G4Material* G4_Pb;
   G4Material* G4_Cu;
   G4Material* G4_Al;
+  G4Material* G4_Ge;
   G4Material* G4_WATER;
+  G4Material* Concrete;
   Parameter par; 
 };
 

@@ -18,7 +18,7 @@ t1->SetBranchAddress("EventID",&EventID);
 t1->SetBranchAddress("EkPre",&EkPre);
 for(int i=0;i<sum;i++){
 	t1->GetEntry(i);
-	if((PreEventID!=EventID)&&EkPre==0.662){
+	if((PreEventID!=EventID)&&(EkPre==0.662||EkPre==1.20)){
 		NbEvent++;
 		PreEventID=EventID;
 	}	

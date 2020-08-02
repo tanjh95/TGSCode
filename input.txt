@@ -39,9 +39,9 @@ EkPrimary 1  1.2 # 1.47    # for thermal neutron
 EkWeight  1    1.  
 
 ##primary particle position(mm),z position is given by program
-xInitPrimary -100  #changed by sh
-yInitPrimary 0.0
-zInitPrimary 50  #changed by sh
+xInitPrimary 0 #changed by sh
+yInitPrimary 0 #changed by sh
+zInitPrimary -70.7107 #changed by sh
 
 ##primary particle position smearing range(mm)   range是全长/6边形边长
 xRangePrimary 0 #changed by sh
