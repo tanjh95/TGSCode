@@ -56,13 +56,13 @@ sg4Detector::sg4Detector(G4String fn)
   G4cout<<"creating detector construction..."<<G4endl;
 	par.Energycut=0;
 	par.dBarrel=150*mm;  
-par.xBarrel=0*mm;//changed by sh
+par.xBarrel=-50*mm;//changed by sh
 	par.dDet=13*mm;
 	par.xDet=300*mm;
 	par.dVoxel=50*mm;
 par.Degree=45;//changed by sh
 	par.NbVoxel=27;//changed by sh
-	par.yBarrel=0*mm;
+//	par.yBarrel=0*mm;
 	par.abun=0.96;
 	par.Bcon=0.1;
 	par.Gdcon=0.03;
@@ -133,7 +133,7 @@ void sg4Detector::DefineMaterial()
 void sg4Detector::DefineVolume()
 {
     G4double dworld = 400*mm;
-	G4double RMin_Col=5*mm;//准直器内径
+	G4double RMin_Col=6.5*mm;//准直器内径
 	G4double RMax_Col=8*mm;//准直器外径
 	G4double L_Col=100*mm;//准直器长度
   G4Box* solidWorld = new G4Box("world", dworld, dworld, dworld); //its size
@@ -215,6 +215,7 @@ double x=0,y=0,z=0;
       logicVoxel[j]->SetVisAttributes(CuBoxVisAtt1);
 
 	}	
+ //探测器
   G4Tubs* solidDet=new G4Tubs("HPGE",0.0,dDet/2,LDet/2,0,2*PI);//设置晶体参数 半径  半厚度
  logicDet=new G4LogicalVolume(solidDet,G4_Ge,"logicDet");
 
@@ -229,6 +230,21 @@ double x=0,y=0,z=0;
 				0,
 				checkOverlaps
 				);
+//shieldings 
+G4Tubs* solidSLD=new G4Tubs("Shields",dDet/2,dDet/2+2,LDet/2,0,2*PI);//厚度2mm铅屏蔽，尺寸与det相同
+logicSLD=new G4LogicalVolume(solidSLD,G4_Pb,"logicDet");
+physiSLD=new G4PVPlacement(
+				0,
+				G4ThreeVector(0,0,xDet),
+				logicSLD,
+				"physiSLD",
+				logicWorld,
+				false,
+				0,
+				checkOverlaps
+				);
+
+/////////////////////////////////准直器
 	G4Tubs* solidCol=new G4Tubs("Collimation",RMin_Col,RMax_Col,L_Col/2,0,2*PI);
 	logicCol=new G4LogicalVolume(solidCol,G4_Pb,"logicCol");
 	physiCol=new G4PVPlacement(

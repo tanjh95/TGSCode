@@ -86,7 +86,8 @@ private:
   G4VPhysicalVolume* physiDet;
   G4LogicalVolume* logicCol;
   G4VPhysicalVolume* physiCol;
-  
+  G4LogicalVolume* logicSLD;
+  G4VPhysicalVolume* physiSLD;
     
 //----------Materials-----------
   G4Material* Air;

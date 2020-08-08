@@ -59,9 +59,6 @@ fi
 
 ###主程序开始
 ###############各体素中心y坐标
-Y1=-50
-Y2=0
-Y3=50
 echo "输入模式 1:transmission 2:emmision"
 read modNb
 case $modNb in
@@ -98,17 +95,36 @@ case $modNb in
 			do
         ChangePosition  $loop2  $loop3
         ChangeRotation  $loop
-###source1(Nb6)
-	X6=`echo "$loop $loop2" |awk '{printf("%g",50*cos(1*$1*3.1415926/180)+$2)}'`
-	Z6=`echo "$loop" |awk '{printf("%g",50*sin(-1*$1*3.1415926/180))}'`
-###source2(Nb4)
-	X4=`echo "$loop $loop2" |awk '{printf("%g",-50*cos(1*$1*3.1415926/180)+$2)}'`
-	Z4=`echo "$loop" |awk '{printf("%g",50*sin(1*$1*3.1415926/180))}'`
-###soource9（Nb9)
+###source1(1)
+	X1=`echo "$loop $loop2" |awk '{printf("%g",-50*sqrt(2)*sin((45-$1)*3.1415926/180)+$2)}'` #first point
+	Z1=`echo "$loop" |awk '{printf("%g",50*sqrt(2)*cos((45-$1)*3.1415926/180))}'`
+###source2(N2)
+	X2=`echo "$loop $loop2" |awk '{printf("%g",50*sin(1*$1*3.1415926/180)+$2)}'`
+	Z2=`echo "$loop" |awk '{printf("%g",50*cos(1*$1*3.1415926/180))}'`
+##soruce3
+	X3=`echo "$loop $loop2" |awk '{printf("%g",50*sqrt(2)*cos((45-$1)*3.1415926/180)+$2)}'` #first point
+	Z3=`echo "$loop" |awk '{printf("%g",50*sqrt(2)*cos((45+$1)*3.1415926/180))}'`
+###source1(4)
+	X4=`echo "$loop $loop2" |awk '{printf("%g",-50*cos($1*3.1415926/180)+$2)}'` #first point
+	Z4=`echo "$loop" |awk '{printf("%g",50*sin($1*3.1415926/180))}'`
+###source1(5)
+	X5=`echo "$loop2" |awk '{printf("%g",$1)}'` #first point
+	Z5=`echo "$loop" |awk '{printf("%g",0)}'`
+###source1(6)
+	X6=`echo "$loop $loop2" |awk '{printf("%g",50*cos($1*3.1415926/180)+$2)}'` #first point
+	Z6=`echo "$loop" |awk '{printf("%g",-50*sin($1*3.1415926/180))}'`
+##soruce7
+	X7=`echo "$loop $loop2" |awk '{printf("%g",-50*sqrt(2)*cos((45-$1)*3.1415926/180)+$2)}'` #first point
+	Z7=`echo "$loop" |awk '{printf("%g",-50*sqrt(2)*cos((45+$1)*3.1415926/180))}'`
+###source8
+	X8=`echo "$loop $loop2" |awk '{printf("%g",-50*sin(1*$1*3.1415926/180)+$2)}'`
+	Z8=`echo "$loop" |awk '{printf("%g",-50*cos(1*$1*3.1415926/180))}'`
+###source9
 	X9=`echo "$loop $loop2" |awk '{printf("%g",50*sqrt(2)*sin((45-$1)*3.1415926/180)+$2)}'` #first point
 	Z9=`echo "$loop" |awk '{printf("%g",-50*sqrt(2)*cos((45-$1)*3.1415926/180))}'`
-	ChangeSource $X4 $Y1 $Z4 ##示例是 体素
-   #     ApplyRunEm  $loop2  $loop3 $loop 4
+
+	ChangeSource $X6 $Y2 $Z6  ##示例是 体素
+        ApplyRunEm  $loop2  $loop  $loop3  15
         done 
 	done
   done
