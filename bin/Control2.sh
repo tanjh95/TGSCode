@@ -66,6 +66,7 @@ case $modNb in
 1)
  cd  $tgshome
  sed -i "42c xInitPrimary 0  #changed by sh" input.txt
+ sed -i "43c yInitPrimary 0 #changed by sh"  input.txt
  sed -i "44c zInitPrimary -100  #changed by sh" input.txt
 
  for loop2 in  -50 #  0 50 #横移
