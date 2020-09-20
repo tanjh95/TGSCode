@@ -1,0 +1,440 @@
+// sg4Detector.cc - 
+// YushouSong, 宋玉收
+// email : songyushou80@163.com
+// Created On      : Wed Apr 27 09:23:55 2016
+// Last Modified On: Fri May 27 20:22:00 2016
+// Update Count    : 248
+// 
+// sg4Detector.cc --- 
+// 
+
+
+
+#include "G4RunManager.hh"
+#include "G4NistManager.hh"
+#include "G4Material.hh"
+#include "G4LogicalVolume.hh"
+#include "G4PVPlacement.hh"
+#include "G4UnitsTable.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4UserLimits.hh"
+#include "G4AutoDelete.hh"
+#include "G4VisAttributes.hh"
+#include "G4Colour.hh"
+#include "G4Region.hh"
+#include "G4RegionStore.hh"
+
+#include "G4PSEnergyDeposit3D.hh"
+#include "G4PSNofStep3D.hh"
+#include "G4PSCellFlux3D.hh"
+#include "G4PSPassageCellFlux3D.hh"
+#include "G4PSFlatSurfaceFlux3D.hh"
+#include "G4PSFlatSurfaceCurrent3D.hh"
+#include "G4SDParticleWithEnergyFilter.hh"
+#include "G4SDParticleFilter.hh"
+#include "G4SDChargedFilter.hh"
+#include "G4SDNeutralFilter.hh"
+#include "G4Box.hh"
+#include "G4Tubs.hh"
+
+#include "sg4Detector.hh"
+#include <stdio.h>
+#include <iostream>
+
+const double PI= 3.14159265358979323846;
+sg4Detector::sg4Detector(G4String fn)
+  : G4VUserDetectorConstruction(),checkOverlaps(true),logicWorld(0)
+{
+  fnInput=fn;
+  OpticalInputFile=ysongMsg::ReadValue<G4String>("OpticalFile",fnInput);
+  KitOpt=new sg4KitMatOptical(OpticalInputFile);
+
+  G4cout<<"creating detector construction..."<<G4endl;
+}
+
+sg4Detector::~sg4Detector()
+{
+  //
+  G4cout<<"deleting detector construction..."<<G4endl;
+}
+
+G4VPhysicalVolume* sg4Detector::Construct()
+{
+  DefineMaterial();
+  // DefineOpticalMPT();//
+  DefineVolume();//-------------------- 
+  // DefineSurf();
+  return physiWorld;  
+
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void sg4Detector::ConstructSDandField()
+{
+  //
+  // DefineOneSD(logicPMT);
+  DefineOneSD(logicBox);
+  /*
+  //  ----------field-----------
+  G4int StepperType=4;
+  G4double scaleWorld=1000*mm;
+  G4double largestStep=scaleWorld*5;
+  G4double minStep=0.001*mm;
+  //this parameter stops steps from becoming unnecessarily small.
+  G4double deltaStep=0.001*mm;
+  //roughly the position error which is acceptable in an integration step
+  G4double deltaIntersection=0.001*mm; //for boundary 
+  //it not reasonable to set 'deltaIntersection' far diff with deltastep
+  G4double minEpsStep=1.e-5;
+  G4double maxEpsStep=1.e-4;  
+  //impose a minimum and maximum on this relative error of position/momentum
+  G4double deltaChord=0.001*mm; 
+  //upper bound of the distance between the chord and the curve
+  
+  //-------------------
+  //If the step determined by physics processes is too large, one can not make
+  //the track curve smooth by setting the parameters above.
+  //-------------------
+
+  // StepperType=(int)(ysongMsg::ReadValue<double>("StepperType", fnInput));
+  // MinStep=ysongMsg::ReadValue<double>("MinStep", fnInput); 
+  
+  sg4EMFieldBuilder* pEM=new sg4EMFieldBuilder(new sg4EMField());
+  pEM->SetStepperType(StepperType);
+  pEM->SetMinStep(minStep);
+  pEM->UpdateField();
+  //
+
+  G4FieldManager* pFMng=pEM->GetFieldManager();
+  pFMng->SetDeltaOneStep(deltaStep); 
+  pFMng->SetMinimumEpsilonStep(minEpsStep);
+  pFMng->SetMaximumEpsilonStep(maxEpsStep);
+  pFMng->SetDeltaIntersection(deltaIntersection);
+  pFMng->GetChordFinder()->SetDeltaChord(deltaChord);//default value 0.25*mm
+  G4TransportationManager::GetTransportationManager()->GetPropagatorInField()
+  ->SetLargestAcceptableStep(largestStep);
+
+ 
+  G4bool forAllDaughters=false;
+  logicDipole1->SetFieldManager(pFMng, forAllDaughters);
+
+  */
+  
+  // Register the field and its manager for deleting
+  // 使用G4AutoDelete自动释放，避免人为在析构函数中释放
+  // G4AutoDelete::Register(EMField);
+  // G4AutoDelete::Register(pEM);
+  // G4AutoDelete::Register(pFMng);
+
+
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void sg4Detector::DefineMaterial()
+{ 
+  //在这里先定义所有可能用到的材料
+  // Get nist material manager
+  G4NistManager* nist = G4NistManager::Instance();
+  
+  //调用G4自身定义好的材料
+  Air=nist->FindOrBuildMaterial("G4_AIR");
+  nist->FindOrBuildMaterial("G4_WATER");
+  nist->FindOrBuildMaterial("G4_Pb");
+  nist->FindOrBuildMaterial("G4_H");
+  nist->FindOrBuildMaterial("G4_Al");
+  // Liquid argon material
+  G4int iz, ia;
+  G4double a;  // mass of a mole;
+  G4double z;  // z=mean number of protons;  
+  G4double density;
+  //  G4double temperature, pressure;
+  G4int nel, natoms;
+  new G4Material("liquidArgon", z=18., a= 39.95*g/mole, density= 1.390*g/cm3);
+  // The argon by NIST Manager is a gas with a different density
+
+  // Vacuum
+  vacuum= new G4Material("vacuum", z=1., a=1.01*g/mole,density= universe_mean_density, kStateGas, 2.73*kelvin, 3.e-18*pascal);
+  //elements
+  G4Element* H = new G4Element("Hydrogen", "H", z=1.,a= 1.00*g/mole);  
+  G4Element* C = new G4Element("Carbon"  , "C", z=6.,a= 12.00*g/mole);
+  //G4Element* N = new G4Element("Nitrogen", "N", z=7.,a= 14.01*g/mole);
+  G4Element* O = new G4Element("Oxygen"  , "O", z=8.,a= 15.9994*g/mole); 
+  G4Element* Mg= new G4Element("Magnesium", "Mg", z=12.,a=24.305*g/mole);
+  G4Element* Al= new G4Element("Aluminium", "Al", z=13.,a=26.9815*g/mole); 
+  G4Element* Si= new G4Element("Silicon", "Si", z=14,a= 28.09*g/mole);
+  //G4Element* I= new G4Element("Iodine", "I", z=53,   a=126.90*g/mole);
+  //G4Element* Cs= new G4Element("Cesium", "Cs", z=55, a=132.91*g/mole);
+  G4Element* Ce= new G4Element("Cerium", "Ce", z=58,   a=140.12*g/mole);
+  //---------------------------------------------------------
+
+  //Scintillator(BC408)
+  BC408 = new G4Material("BC408", density= 1.03*g/cm3, nel=2);
+  BC408->AddElement(C, natoms=10);
+  BC408->AddElement(H, natoms=11);
+  
+  //----------------------------------------------------------
+  
+  G4Isotope* Li6 = new G4Isotope("Li6", iz=3, ia=6, a=6.01512*g/mole);
+  G4Isotope* Li7 = new G4Isotope("Li7", iz=3, ia=7, a=7.01600*g/mole);
+  G4Element* LiRich6=new G4Element("Li6 enriched lithium","LiRich6",nel=2);
+  //
+  LiRich6->AddIsotope(Li6, 95.*perCent);
+  LiRich6->AddIsotope(Li7, 5.*perCent);
+  density=1.0*g/cm3;
+  LiO2=new G4Material("LiO2", density, nel=2);
+  LiO2->AddElement(LiRich6, natoms=2);
+  LiO2->AddElement(O, natoms=1);
+
+  Al2O3=nist->FindOrBuildMaterial("G4_ALUMINUM_OXIDE");
+  SiO2=nist->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
+  
+  Ce2O3=new G4Material("Ce2O3", density, nel=2);
+  Ce2O3->AddElement(Ce, natoms=2);
+  Ce2O3->AddElement(O, natoms=3);
+  //GS20
+  G4double fm[7]={0.0, 1.*140.12, 46.5*6.941, 4.07*24.305, //nim135.441.1976
+		  14.44*26.9815,128.2*15.9994, 38.75*28.09};//fraction of mass
+  for(size_t i=0; i<6; i++) fm[0]+=fm[i+1];
+  density=2.5*g/cm3;//fomr internet products info
+
+  GS20=new G4Material("Glass GS20", density, nel=6);
+  GS20->AddElement(Ce, fm[1]/fm[0]);
+  GS20->AddElement(LiRich6, fm[2]/fm[0]);
+  GS20->AddElement(Mg, fm[3]/fm[0]);
+  GS20->AddElement(Al, fm[4]/fm[0]);
+  GS20->AddElement(O, fm[5]/fm[0]);
+  GS20->AddElement(Si, fm[6]/fm[0]);
+
+  //Material of MCP Version 1
+  ////富集硼定义
+  G4Isotope* B9=new G4Isotope("B9",5,9,9.0*g/mole);
+  G4Isotope* B10=new G4Isotope("B10",5,10,10.0*g/mole);
+  G4Element* elB=new G4Element("enriched B","richB",2);
+  elB->AddIsotope(B9,4.*perCent);
+  elB->AddIsotope(B10,96.*perCent);
+  ////富集B2O3定义
+  BB2O3=new G4Material("10B2O3",2.50*g/cm3,2);//此处密度是估计值，为精确计算 未富集氧化硼密度未2.46*g/cm3
+  BB2O3->AddElement(elB,2);
+  BB2O3->AddElement(O,3);
+  ///////
+  G4Element* Gd=new G4Element("gali","Gd",64,157.3*g/mole);
+  Gd2O3=new G4Material ("Gd2O3",7.41*g/cm3,2);
+  Gd2O3->AddElement(Gd,2);
+  Gd2O3->AddElement(O,3);
+  ////MCP基体定义
+  MOMCP=new G4Material("MOMCP",3.86*g/cm3,2); //MOMCP=materials of MCP 密度信息来自05-AST
+  MOMCP->AddMaterial(SiO2,95.*perCent);
+  MOMCP->AddMaterial(Gd2O3,5*perCent);
+  // Print materials，运行时在终端输出材料信息
+  //G4cout << *(G4Material::GetMaterialTable()) << G4endl;
+}
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
+void sg4Detector::DefineVolume()
+{
+  //通过G4Material::GetMaterial()获取DefineMaterials()中定义的材料！
+  // G4Material* Env_mat =  G4Material::GetMaterial("BC408");
+ 
+
+  G4double dworld = 10*mm;
+  G4double dbar[3]={400., 50., 50.};
+  G4double rmcp=0.25;
+  G4double lmcp=1.0;
+  G4double degree=8;
+  const double pi=3.1415;
+  G4double lChannel=lmcp/cos(degree*pi/180);
+  G4double rChannel= 0.005*mm;
+  G4double ddipole[3]={100, 100, 100};
+  G4double sdip2bar=10*mm;
+  G4double zdipole=-dbar[2]/2-ddipole[2]/2-sdip2bar;
+  
+
+  G4Box* solidWorld = new G4Box("world", dworld, dworld, dworld); //its size
+  logicWorld = new G4LogicalVolume(solidWorld,          //its solid
+				   vacuum,           //its material
+				   "world");            //its name 
+  physiWorld = new G4PVPlacement(0,                     //no rotation
+				 G4ThreeVector(),       //at (0,0,0)
+				 logicWorld,            //its logical volume
+				 "world",               //its name
+				 0,                     //its mother  volume
+				 false,                 //no boolean operation
+				 0,                     //copy number
+				 checkOverlaps);        //overlaps checking
+
+  /* define a box
+     G4Box* solidBar = new G4Box("bar",                   //its name
+     dbar[0]/2, dbar[1]/2, dbar[2]/2); //its size
+     logicBar= new G4LogicalVolume(solidBar,            //its solid
+     BC408,             //its material
+     "bar");         //its name
+     physiBar= new G4PVPlacement(0,                       //no rotation
+     G4ThreeVector(),         //at (0,0,0)
+     logicBar,                //its logical volume
+     "bar",              //its name
+     logicWorld,              //its mother  volume
+     false,                   //no boolean operation
+     0,                       //copy number
+     checkOverlaps);          //overlaps checking
+  */
+  //// MCP plate
+  G4Box* solidmcp= new G4Box("mcp", 0.25, 0.25,1); 
+  logicmcp= new G4LogicalVolume(solidmcp,            //its solid
+   				MOMCP,             //its material
+   				"mcp");         //its name
+       
+  physimcp= new G4PVPlacement(0,                     //no rotation
+			      G4ThreeVector(0,0,0),  //at (0,0,0)
+			      logicmcp,              //its logical volume
+			      "mcp",                 //its name
+			      logicWorld,            //its mother volume
+			      false,                 //no boolean
+			      0,                     // copy number
+			      checkOverlaps);        //???
+     
+  /*旋转
+    G4RotationMatrix* roty_1=new G4RotationMatrix;/////////////////
+    roty_1->rotateY(90.*deg);
+  
+    physiPmtR= new G4PVPlacement(roty_1,                       //no rotation
+    G4ThreeVector((dbar[0]+lpmt)/2,0,0),  //at (0,0,0)
+    logicPMT,                //its logical volume
+    "pmt",              //its name
+    logicWorld,              //its mother  volume
+    false,                   //no boolean operation
+    0,                       //copy number
+    checkOverlaps);          //overlaps checking
+
+    physiPmtL= new G4PVPlacement(roty_1,                       //no rotation
+    G4ThreeVector(-(dbar[0]+lpmt)/2,0,0), //at (0,0,0)
+    logicPMT,                //its logical volume
+    "pmt",              //its name
+    logicWorld,              //its mother  volume
+    false,                   //no boolean operation
+    1,                       //copy number
+    checkOverlaps);          //overlaps checking
+  */
+  ////channel definition
+
+
+  G4Box* solidChannel= new G4Box("Channel", 0.005,0.005,1); 
+  logicChannel= new G4LogicalVolume(solidChannel,            //its solid
+				    vacuum,             //its material
+				    "Channel");         //its name
+
+  ////lots of channels////
+  char str[12];  
+  ifstream infile("../position2.txt");
+  G4RotationMatrix* rot=new G4RotationMatrix;/////////////////
+  rot->rotateY(0.*deg);
+  G4VPhysicalVolume* physiChannel[1681];
+  double x,y;
+  for(int i=0;i<1681;i++)
+    {
+      infile>>x>>y;
+      sprintf (str,"channel %d",i);
+      physiChannel[i]= new G4PVPlacement(rot,                     //rotation
+					 G4ThreeVector(x,y,0),  //注意单位 x y算出来是
+					 logicChannel,          //its logical volume
+					 str,                 //its name
+					 logicmcp,            //its mother volume
+					 false,                 //no boolean
+					 0,                     // copy number
+					 checkOverlaps);        //???
+      G4VisAttributes*CuBoxVisAtt1= new G4VisAttributes(G4Colour(1.0,1.0,0.0));//yellow
+      logicChannel->SetVisAttributes(CuBoxVisAtt1);
+      // cout<<x<<"\t"<<y<<endl;
+    }
+
+  //Neutron DET
+
+  G4Box* solidBox=new G4Box("Box",5,5,1);
+  logicBox= new G4LogicalVolume(solidBox,SiO2,"Box");
+  physiBox= new G4PVPlacement(0,G4ThreeVector(0,0,3),logicBox,"Box",logicWorld,false,0,checkOverlaps);
+
+  // //dipole
+  // G4Box* soliddipole = new G4Box("dipole",                   //its name
+  // 				 ddipole[0]/2, ddipole[1]/2, ddipole[2]/2); //its size
+  // logicDipole1=new G4LogicalVolume(soliddipole,            //its solid
+  // 				   Air,             //its material
+  // 				   "dipole");         //its name
+  // physiDipole1=new G4PVPlacement(0,                       //no rotation
+  // 				 G4ThreeVector(0,0, zdipole), //at (0,0,0)
+  // 				 logicDipole1,                //its logical volume
+  // 				 "dipole",              //its name
+  // 				 logicWorld,              //its mother  volume
+  // 				 false,                   //no boolean operation
+  // 				 0,                       //copy number
+  // 				 checkOverlaps);          //overlaps checking
+
+
+  // logicDipole1->SetUserLimits(new G4UserLimits(0.1*mm)); //tested, 20160510 
+
+  // G4UserLimits(G4double uStepMax = DBL_MAX,
+  //              G4double uTrakMax = DBL_MAX,
+  //              G4double uTimeMax = DBL_MAX,
+  //              G4double uEkinMin = 0.,
+  //              G4double uRangMin = 0. );
+
+  // uStepMax 	Maximum step length
+  // uTrakMax 	Maximum total track length
+  // uTimeMax 	Maximum global time for a track
+  // uEkinMin 	Minimum remaining kinetic energy for a track
+  // uRangMin 	Minimum remaining range for a track 
+  /*User limits assigned to logical volume do not propagate to daughter volumes, while User limits assigned to region propagate to daughter volumes unless daughters belong to another region.*/
+  //------------------
+  /*
+  // Create Target G4Region and add logical volume
+  
+  fRegion = new G4Region("Target");
+  
+  G4ProductionCuts* cuts = new G4ProductionCuts();
+  
+  G4double defCut = 1*nanometer;
+  cuts->SetProductionCut(defCut,"gamma");
+  cuts->SetProductionCut(defCut,"e-");
+  cuts->SetProductionCut(defCut,"e+");
+  cuts->SetProductionCut(defCut,"proton");
+  
+  fRegion->SetProductionCuts(cuts);
+  fRegion->AddRootLogicalVolume(logicTarget); 
+  */
+
+}
+/*  干嘛的？？
+    void sg4Detector::DefineOpticalMPT()
+    {
+
+    KitOpt->BuildOpticalMPT(BC408,"BC408", 11);
+    KitOpt->BuildOpticalMPT(SiO2,"SiO2", 1);   
+    KitOpt->BuildOpticalMPT(Air,"Air", 1); 
+
+    // KitOpt->BuildOpticalMPT(GSna,"GSna", 1);
+    // KitOpt->BuildOpticalMPT(SiGrease, "SiGrease", 1);
+    }
+    void sg4Detector::DefineSurf()
+    { 
+    KitOpt->BuildSurf(dielectric_dielectric,polishedfrontpainted, 
+    "pmtr2world", physiPmtR, physiWorld);
+    KitOpt->BuildSurf(dielectric_dielectric,polishedfrontpainted, 
+    "pmtl2world", physiPmtL, physiWorld);
+    KitOpt->BuildSurf(dielectric_dielectric,polishedbackpainted, 
+    "bar2world", physiBar, physiWorld);
+
+    // KitOpt->BuildSurf(dielectric_dielectric,polishedfrontpainted, 
+    // 		    "rod2mirr",physiRodFill, physiPreWindow);
+    // KitOpt->BuildSurf(dielectric_dielectric,polishedfrontpainted, 
+    // 		    "LightEnd",physiPostWindow, physiWorld);  
+    }
+*/
+void sg4Detector::DefineOneSD(G4LogicalVolume* lv)
+{
+  if(!lv){
+    G4cout<<"$$No given logical volume, no SD built"<<G4endl;
+    return;
+  }
+  G4SDManager* SDman=G4SDManager::GetSDMpointer();
+  sg4SD* sd1=new sg4SD(lv->GetName()); //
+  SDman->AddNewDetector(sd1);
+  lv->SetSensitiveDetector(sd1);
+}
