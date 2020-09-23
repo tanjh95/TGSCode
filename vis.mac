@@ -10,5 +10,5 @@
 /vis/modeling/trajectories/test2/default/setDrawStepPts  true
 /vis/modeling/trajectories/test2/default/setStepPtsSize 2
 
-##/run/initialize
-##/run/beamOn 100
+/run/initialize
+/run/beamOn 10

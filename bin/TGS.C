@@ -33,8 +33,8 @@ return 0;
 
 int TGS(){
 char str[50];
-for(int i=0;i<4;i++){
-sprintf(str,"Em50_%d_6.root",i*45);
+for(int i=-1;i<2;i++){
+sprintf(str,"Em%d_0_-50_1.root",i*50);
 cout<<"Processing"<<str<<endl;
 TFile *f=new TFile(str);
 TTree *t1=new TTree("tree","tree disk");

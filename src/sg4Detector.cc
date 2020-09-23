@@ -60,13 +60,13 @@ par.xBarrel=-50*mm;//changed by sh
 	par.dDet=13*mm;
 	par.xDet=300*mm;
 	par.dVoxel=50*mm;
-par.Degree=45;//changed by sh
+par.Degree=135;//changed by sh
 	par.NbVoxel=27;//changed by sh
 //	par.yBarrel=0*mm;
 	par.abun=0.96;
 	par.Bcon=0.1;
 	par.Gdcon=0.03;
-par.yBarrel=-50*mm;//changed by sh
+par.yBarrel=0*mm;//changed by sh
 
 }
 
@@ -134,7 +134,7 @@ void sg4Detector::DefineVolume()
 {
     G4double dworld = 400*mm;
 	G4double RMin_Col=6.5*mm;//准直器内径
-	G4double RMax_Col=8*mm;//准直器外径
+	G4double RMax_Col=60*mm;//准直器外径
 	G4double L_Col=100*mm;//准直器长度
   G4Box* solidWorld = new G4Box("world", dworld, dworld, dworld); //its size
   logicWorld = new G4LogicalVolume(solidWorld,          //its solid
@@ -194,7 +194,7 @@ double x=0,y=0,z=0;
 		 sprintf(str1,"logicVoxel%d",j);
 //设置体素材料	 
 		if(j==5){
-              logicVoxel[j]=new G4LogicalVolume(solidVoxel,Concrete,str1);
+              logicVoxel[j]=new G4LogicalVolume(solidVoxel,G4_WATER,str1);
 			}
 		else{
 		    logicVoxel[j]=new G4LogicalVolume(solidVoxel,G4_WATER,str1);
