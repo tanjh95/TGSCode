@@ -35,13 +35,13 @@ NamePrimary   gamma #alpha #
 ##IonQ 0
 ##IonEstar 2.0
 ##'ssopPrimaryGenerator' kinetic energy of neutron(MeV, photon 2.85 eV)
-EkPrimary 1  0.662 # 1.47    # for thermal neutron
+EkPrimary 1    0.662 # 1.47    # for thermal neutron
 EkWeight  1    1.  
 
 ##primary particle position(mm),z position is given by program
-xInitPrimary -14.6447 #changed by sh
+xInitPrimary 0 #changed by sh
 yInitPrimary 0 #changed by sh
-zInitPrimary -35.3553 #changed by sh
+zInitPrimary 50 #changed by sh
 
 ##primary particle position smearing range(mm)   range是全长/6边形边长
 xRangePrimary 0 #changed by sh
@@ -49,12 +49,12 @@ yRangePrimary 0
 zRangePrimary 0
 
 ##primary direction rotation respect to X/Y/Z axis(unit:degree)
-DirectRotX 0
-DirectRotY 2.732374 #changed by sh
-DirectRotZ 0
+DirectRotX  0  #changed by sh
+DirectRotY -0.000000 #changed by sh
+DirectRotZ  0  #changed by sh
 
 ##primary direction range(unit:degree)
-RangeThetaPri 1.441700 #changed by sh
+RangeThetaPri 2.085226 #changed by sh
 ##===========SD output===========
 ##following cuts performed in SD 
 EDepByParticleSD 0  ##energy dep for scint

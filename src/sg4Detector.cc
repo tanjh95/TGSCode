@@ -56,11 +56,11 @@ sg4Detector::sg4Detector(G4String fn)
   G4cout<<"creating detector construction..."<<G4endl;
 	par.Energycut=0;
 	par.dBarrel=150*mm;  
-par.xBarrel=-50*mm;//changed by sh
+par.xBarrel=0*mm;//changed by sh
 	par.dDet=13*mm;
 	par.xDet=300*mm;
 	par.dVoxel=50*mm;
-par.Degree=135;//changed by sh
+par.Degree=0;//changed by sh
 	par.NbVoxel=27;//changed by sh
 //	par.yBarrel=0*mm;
 	par.abun=0.96;
@@ -193,11 +193,11 @@ double x=0,y=0,z=0;
 	       	 sprintf (str,"V%d",j); 
 		 sprintf(str1,"logicVoxel%d",j);
 //设置体素材料	 
-		if(j==5){
-              logicVoxel[j]=new G4LogicalVolume(solidVoxel,G4_WATER,str1);
+		if(j==14){
+              logicVoxel[j]=new G4LogicalVolume(solidVoxel,vacuum,str1);
 			}
 		else{
-		    logicVoxel[j]=new G4LogicalVolume(solidVoxel,G4_WATER,str1);
+		    logicVoxel[j]=new G4LogicalVolume(solidVoxel,vacuum,str1);
 			}
 //
 		x=posMat1[j-1],z=posMat2[j-1],y=posMat3[j-1];

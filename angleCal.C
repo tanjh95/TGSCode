@@ -15,13 +15,16 @@ FILE *fp;
 fp=fopen("angledata.temp","w");//每次重写
 double angle_temp=atan((-numX)/(d0+bucket_D*0.5-numZ));//倾角 rad表示
 double L0=fabs(sin(angle_temp))*Col_L;//中间变量
-if(L0==0){
+if(L0<=1e-05){
 L0=0.5*Col_D;
 }
 double L=pow((pow(d0+bucket_D*0.5-Col_L-numX,2)+pow(numZ,2)),0.5);//L 中间变量
 double Theta_temp=asin((L0)/L);//3是修正量 补充张角
 double angle=180*angle_temp/pi;
 double Theta=180*Theta_temp/pi;
+//cout<<"numX="<<numX<<" numY="<<numY<<" numZ="<<numZ<<endl;
+//cout<<"angle_temp="<<angle_temp<<" Theta_temp="<<Theta_temp<<endl;
+//cout<<"L="<<L<<" L0="<<L0<<endl;
 fprintf(fp,"%f\t%f",angle,Theta);
 fclose(fp);
 

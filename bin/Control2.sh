@@ -39,7 +39,10 @@ sed -i "57c RangeThetaPri $2 #changed by sh" input.txt
 ApplyRunTr(){ ## 接收参数:1.横移 2.纵移 3.旋转
 cd $tgshome
 sed -i "47c xRangePrimary -3 #changed by sh" input.txt
-sed -i "57c RangeThetaPri 0 #changed by sh" input.txt
+#sed -i "57c RangeThetaPri 0 #changed by sh" input.txt
+sed -i "52c DirectRotX  0  #changed by sh" input.txt
+sed -i "53c DirectRotY  0  #changed by sh" input.txt
+sed -i "54c DirectRotZ  0  #changed by sh" input.txt
 . build.sh
 if [ $? != 0 ]
 then
@@ -56,7 +59,7 @@ fi
 ApplyRunEm(){ ## 接收参数:1.横移 2.纵移 3.旋转 4.voxel nub which have source
 cd $tgshome
 sed -i "47c xRangePrimary 0 #changed by sh" input.txt
-sed -i "57c RangeThetaPri 180 #changed by sh" input.txt
+#sed -i "57c RangeThetaPri 180 #changed by sh" input.txt
 . build.sh
 if [ $? != 0 ]
 then
@@ -82,26 +85,26 @@ case $modNb in
  sed -i "43c yInitPrimary 0 #changed by sh"  input.txt
  sed -i "44c zInitPrimary -100  #changed by sh" input.txt
 
- for loop2 in  -50 #  0 50 #横移
+ for loop2 in  0 #  0 50 #横移
   do 
    for loop in  0 #45 90 135 #旋转
    do
-	for loop3 in -50 #0 50 #纵移
+	for loop3 in 0 #0 50 #纵移
 		do
   ChangePosition $loop2 $loop3
   ChangeRotation $loop
-  ApplyRunTr $loop2 $loop3 $loop
+ApplyRunTr $loop2 $loop3 $loop
   done
   done
 	done
 ;;
 2)
 ###Emmision
-  for loop2 in  -50 #0  50  #横移
+  for loop2 in -50 0  50  #横移
     do 
-    for loop in 45 90 135   #旋转
+    for loop in  0 45 90 135   #旋转
       do
-		for loop3 in 0 # #0 50 #纵移
+		for loop3 in 0 #-50 0 50 #纵移
 			do
 	Y1=`echo "$loop3" |awk '{printf("%g",-50+$1)}'`
 ##第一层
@@ -138,8 +141,9 @@ case $modNb in
 	X9=`echo "$loop $loop2" |awk '{printf("%g",50*sqrt(2)*sin((45-$1)*3.1415926/180)+$2)}'` #first point
 	Z9=`echo "$loop" |awk '{printf("%g",-50*sqrt(2)*cos((45-$1)*3.1415926/180))}'`
 
-	ChangeSourcePos $X2 $Y2 $Z2  ##示例是 体素
-#ApplyRunEm  $loop2  $loop  $loop3  2
+
+ChangeSourcePos $X2 $Y2 $Z2  ##示例是 体素
+ApplyRunEm  $loop2  $loop  $loop3  11
         done 
 	done
   done
