@@ -56,11 +56,11 @@ sg4Detector::sg4Detector(G4String fn)
   G4cout<<"creating detector construction..."<<G4endl;
 	par.Energycut=0;
 	par.dBarrel=150*mm;  
-par.xBarrel=0*mm;//changed by sh
+par.xBarrel=50*mm;//changed by sh
 	par.dDet=13*mm;
 	par.xDet=300*mm;
 	par.dVoxel=50*mm;
-par.Degree=0;//changed by sh
+par.Degree=135;//changed by sh
 	par.NbVoxel=27;//changed by sh
 //	par.yBarrel=0*mm;
 	par.abun=0.96;
@@ -194,10 +194,10 @@ double x=0,y=0,z=0;
 		 sprintf(str1,"logicVoxel%d",j);
 //设置体素材料	 
 		if(j==14){
-              logicVoxel[j]=new G4LogicalVolume(solidVoxel,vacuum,str1);
+              logicVoxel[j]=new G4LogicalVolume(solidVoxel,Concrete,str1);
 			}
 		else{
-		    logicVoxel[j]=new G4LogicalVolume(solidVoxel,vacuum,str1);
+		    logicVoxel[j]=new G4LogicalVolume(solidVoxel,G4_WATER,str1);
 			}
 //
 		x=posMat1[j-1],z=posMat2[j-1],y=posMat3[j-1];
@@ -230,6 +230,8 @@ double x=0,y=0,z=0;
 				0,
 				checkOverlaps
 				);
+		  G4VisAttributes*CuBoxVisAtt2= new G4VisAttributes(G4Colour(0.0,1.0,1.0));//yellow
+		  logicDet->SetVisAttributes(CuBoxVisAtt2);
 //shieldings 
 G4Tubs* solidSLD=new G4Tubs("Shields",dDet/2,dDet/2+2,LDet/2,0,2*PI);//厚度2mm铅屏蔽，尺寸与det相同
 logicSLD=new G4LogicalVolume(solidSLD,G4_Pb,"logicDet");
@@ -257,6 +259,8 @@ physiSLD=new G4PVPlacement(
 					0,		
 					checkOverlaps
 					);
+      G4VisAttributes*CuBoxVisAtt3= new G4VisAttributes(G4Colour(1.0,0.0,1.0));//
+      logicCol->SetVisAttributes(CuBoxVisAtt3);
 
   	  logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
 

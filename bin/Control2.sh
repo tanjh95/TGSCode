@@ -93,7 +93,7 @@ case $modNb in
 		do
   ChangePosition $loop2 $loop3
   ChangeRotation $loop
-ApplyRunTr $loop2 $loop3 $loop
+#ApplyRunTr $loop2 $loop3 $loop
   done
   done
 	done
@@ -142,8 +142,8 @@ ApplyRunTr $loop2 $loop3 $loop
 	Z9=`echo "$loop" |awk '{printf("%g",-50*sqrt(2)*cos((45-$1)*3.1415926/180))}'`
 
 
-ChangeSourcePos $X2 $Y2 $Z2  ##示例是 体素
-ApplyRunEm  $loop2  $loop  $loop3  11
+ChangeSourcePos $X8 $Y2 $Z8  ##示例是 体素
+#ApplyRunEm  $loop2  $loop  $loop3  17
         done 
 	done
   done
